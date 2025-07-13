@@ -4,7 +4,13 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
+interface RouteContext {
+  params: {
+    id: string;
+  };
+}
+
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -63,7 +69,7 @@ const tastingUpdateSchema = z.object({
   perceptionScore: z.coerce.number().min(0).max(10),
 }).partial();
 
-export async function PATCH(request: NextRequest, context: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -145,7 +151,7 @@ export async function PATCH(request: NextRequest, context: { params: { id: strin
   }
 }
 
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
