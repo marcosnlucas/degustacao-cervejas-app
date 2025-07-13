@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  tastings  Tasting[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Brewery {
+  id      String @id @default(cuid())
+  name    String @unique
+  beers   Beer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Beer {
+  id         String    @id @default(cuid())
+  name       String
+  photoUrl   String?
+  brewery    Brewery   @relation(fields: [breweryId], references: [id])
+  breweryId  String
+  tastings   Tasting[]
+
+  @@unique([name, breweryId])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tasting {
+  id              String @id @default(cuid())
+  user            User   @relation(fields: [userId], references: [id])
+  userId          String
+  beer            Beer   @relation(fields: [beerId], references: [id])
+  beerId          String
+
+  // Campos descritivos
+  appearance      String
+  foam            String
+  aroma           String
+  flavor          String
+  creaminess      String
+  aftertaste      String
+  drinkability    String
+  dryFinish       String
+  carbonation     String
+  idealOccasion   String?
+  imageUrl        String? // Campo para a URL da imagem
+
+  // Notas de 0 a 10
+  appearanceScore   Int
+  foamScore         Int
+  aromaScore        Int
+  flavorScore       Int
+  creaminessScore   Int
+  aftertasteScore   Int
+  drinkabilityScore Int
+  dryFinishScore    Int
+  carbonationScore  Int
+  perceptionScore   Float
+  finalScore        Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

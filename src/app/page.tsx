@@ -1,103 +1,130 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BeerIcon, PlusCircle, Star } from 'lucide-react';
+import TastingCard from '@/components/TastingCard';
+import TastingRankChart from '@/components/TastingRankChart';
+
+
+
+interface Tasting {
+  id: string;
+  beer: {
+    name: string;
+    brewery: {
+      name: string;
+    };
+  };
+  perceptionScore: number;
+  finalScore: number;
+  createdAt: string;
+  imageUrl?: string | null;
+}
+
+export default function DashboardPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [tastings, setTastings] = useState<Tasting[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+
+  useEffect(() => {
+    console.log('FRONTEND: Status da sessão mudou para:', status);
+    if (status === 'unauthenticated') {
+      console.log('FRONTEND: Usuário não autenticado, redirecionando para /login.');
+      router.push('/login');
+    } else if (status === 'authenticated') {
+      console.log('FRONTEND: Usuário autenticado, buscando degustações.');
+      const fetchTastings = async () => {
+        console.log('FRONTEND: Iniciando busca por degustações...');
+        setLoading(true);
+        try {
+          const response = await fetch('/api/tastings');
+          console.log('FRONTEND: Resposta da API recebida. Status:', response.status);
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`FRONTEND: ${data.length} degustações recebidas.`);
+            setTastings(data);
+          } else {
+            const errorText = await response.text();
+            console.error('FRONTEND: Falha ao buscar degustações. Resposta não OK.', { status: response.status, text: errorText });
+          }
+        } catch (error) {
+          console.error('FRONTEND: Erro catastrófico ao buscar degustações.', error);
+        } finally {
+          console.log('FRONTEND: Finalizando estado de loading.');
+          setLoading(false);
+        }
+      };
+      fetchTastings();
+    }
+  }, [status, router]);
+
+  
+
+
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <p className="text-amber-500">Carregando suas degustações...</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <header className="bg-gray-800/50 backdrop-blur-sm p-4 sticky top-0 z-10">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-amber-500 flex items-center gap-2">
+            <BeerIcon />
+            BeerTaster
+          </h1>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-300 hidden sm:block">{session.user?.email}</span>
+            <Button variant="outline" size="sm" onClick={() => signOut()} className="border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-white">
+              Sair
+            </Button>
+          </div>
         </div>
+      </header>
+
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+        {tastings.length > 0 && (
+          <TastingRankChart data={[...tastings].sort((a, b) => b.finalScore - a.finalScore)} />
+        )}
+
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl font-bold">Minhas Degustações</h2>
+          <Button onClick={() => router.push('/tastings/new')} className="bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-2">
+            <PlusCircle size={18} />
+            Nova Degustação
+          </Button>
+        </div>
+
+        {tastings.length === 0 ? (
+          <div className="text-center py-20 bg-gray-800/50 rounded-lg">
+            <h3 className="text-xl font-semibold">Nenhuma degustação encontrada.</h3>
+            <p className="text-gray-400 mt-2">Que tal adicionar a primeira?</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {tastings.map((tasting) => (
+              <TastingCard key={tasting.id} tasting={tasting} />
+            ))}
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
