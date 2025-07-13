@@ -4,20 +4,14 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-        const { id } = context.params;
+    const { id } = context.params;
     const tasting = await prisma.tasting.findFirst({
       where: {
         id: id,
@@ -69,7 +63,7 @@ const tastingUpdateSchema = z.object({
   perceptionScore: z.coerce.number().min(0).max(10),
 }).partial();
 
-export async function PATCH(request: NextRequest, context: RouteContext) {
+export async function PATCH(request: NextRequest, context: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -77,7 +71,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const body = await request.json();
-        const { id } = context.params;
+    const { id } = context.params;
     const validation = tastingUpdateSchema.safeParse(body);
 
     if (!validation.success) {
@@ -151,14 +145,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-        const { id } = context.params;
+    const { id } = context.params;
 
     await prisma.tasting.delete({
       where: {
