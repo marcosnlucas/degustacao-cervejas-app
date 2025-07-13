@@ -78,7 +78,7 @@ export default function TastingRankChart({ data }: TastingRankChartProps) {
               />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(251, 191, 36, 0.1)' }} />
               <Bar dataKey="score" fill="#f59e0b" radius={[4, 4, 0, 0]}>
-                <LabelList dataKey="score" position="top" formatter={(value: number) => value.toFixed(1)} style={{ fill: 'white', fontSize: 14, fontWeight: 'bold' }} />
+                <LabelList dataKey="score" position="top" formatter={(value: any) => (typeof value === 'number' ? value.toFixed(1) : value)} style={{ fill: 'white', fontSize: 14, fontWeight: 'bold' }} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
