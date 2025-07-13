@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  await request.json().catch(() => {}); // Workaround for Next.js 15 params issue
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -147,7 +146,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  await request.json().catch(() => {}); // Workaround for Next.js 15 params issue
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
