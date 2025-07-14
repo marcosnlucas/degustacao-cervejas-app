@@ -1,21 +1,16 @@
 import { PrismaClient } from '@/generated/prisma/client';
-import { withAccelerate } from '@prisma/extension-accelerate';
 
 declare global {
+  // allow global `var` declarations
+  // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
 
-const prismaBase = new PrismaClient();
-
-const prismaClient = prismaBase.$extends(withAccelerate());
-
 export const prisma =
-  global.prisma ??
-  (process.env.NODE_ENV === 'production'
-    ? prismaClient
-    : prismaBase);
+  global.prisma ||
+  new PrismaClient({
+    log: ['query'],
+  });
 
-if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
-}
+if (process.env.NODE_ENV !== 'production') global.prisma = prisma;
 
