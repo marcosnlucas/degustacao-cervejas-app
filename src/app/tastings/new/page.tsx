@@ -46,20 +46,21 @@ export default function NewTastingPage() {
     if (selectedFile) {
       setUploading(true);
       try {
-        const fileData = new FormData();
-        fileData.append('file', selectedFile);
+        const uploadResponse = await fetch(
+          `/api/upload?filename=${encodeURIComponent(selectedFile.name)}`,
+          {
+            method: 'POST',
+            body: selectedFile,
+          },
+        );
 
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
-          body: fileData,
-        });
-
-        const result = await uploadResponse.json();
-        if (!result.success) {
-          throw new Error('Falha no upload da imagem.');
+        if (!uploadResponse.ok) {
+          const errorResult = await uploadResponse.json();
+          throw new Error(errorResult.error || 'Falha no upload da imagem.');
         }
-        const fullUrl = `${window.location.origin}${result.url}`;
-        imageUrl = fullUrl;
+
+        const newBlob = await uploadResponse.json();
+        imageUrl = newBlob.url;
       } catch (err: any) {
         setError(err.message || 'Erro ao enviar a imagem.');
         setUploading(false);

@@ -7,7 +7,7 @@
     "build": "DATABASE_URL=\"$POSTGRES_URL\" prisma migrate deploy && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "prisma db seed",
+    "db:seed": "prisma generate && prisma db seed",
     "db:migrate:prod": "npx prisma migrate deploy",
     "db:push": "prisma db push"
   },
@@ -22,6 +22,7 @@
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@types/bcryptjs": "^2.4.6",
+    "@vercel/blob": "^1.1.1",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
