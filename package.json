@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "DATABASE_URL=\"$POSTGRES_URL\" prisma migrate deploy && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:migrate:prod": "npx prisma migrate deploy"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
