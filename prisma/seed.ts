@@ -1,41 +1,42 @@
-import { PrismaClient } from '../src/generated/prisma';
-import bcrypt from 'bcryptjs';
-import * as xlsx from 'xlsx';
-import * as path from 'path';
+// import { PrismaClient } from '../src/generated/prisma';
+// import bcrypt from 'bcryptjs';
+// import * as xlsx from 'xlsx';
+// import * as path from 'path';
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
-// Função para normalizar nomes para servirem como chaves
-const normalize = (name: string) => (name || '').trim().toLowerCase();
+// // Função para normalizar nomes para servirem como chaves
+// const normalize = (name: string) => (name || '').trim().toLowerCase();
 
-async function main() {
-  console.log('Iniciando o script de seed aprimorado...');
+// async function main() {
+//   console.log('Iniciando o script de seed aprimorado...');
 
-  let user = await prisma.user.findUnique({
-    where: { email: 'marcoslucas@gmail.com' },
-  });
+//   let user = await prisma.user.findUnique({
+//     where: { email: 'marcoslucas@gmail.com' },
+//   });
 
-  if (!user) {
-    console.log('Usuário padrão não encontrado. Criando usuário...');
-    const hashedPassword = await bcrypt.hash('123456', 10); // Senha padrão para o usuário de seed
-    user = await prisma.user.create({
-      data: {
-        email: 'marcoslucas@gmail.com',
-        password: hashedPassword,
-      },
-    });
-    console.log('Usuário padrão criado:', user.email);
-  } else {
-    console.log(`Usuário encontrado: ${user.email}. As degustações serão associadas a este usuário.`);
-  }
+//   if (!user) {
+//     console.log('Usuário padrão não encontrado. Criando usuário...');
+//     const hashedPassword = await bcrypt.hash('123456', 10); // Senha padrão para o usuário de seed
+//     user = await prisma.user.create({
+//       data: {
+//         email: 'marcoslucas@gmail.com',
+//         password: hashedPassword,
+//       },
+//     });
+//     console.log('Usuário padrão criado:', user.email);
+//   } else {
+//     console.log(`Usuário encontrado: ${user.email}. As degustações serão associadas a este usuário.`);
+//   }
 
-  // 1. Limpar TODAS as degustações antigas para evitar conflitos de usuário
-  console.log('Limpando todas as degustações antigas...');
-  await prisma.tasting.deleteMany({});
-  console.log(`Degustações antigas foram removidas.`);
+//   // 1. Limpar TODAS as degustações antigas para evitar conflitos de usuário
+//   console.log('Limpando todas as degustações antigas...');
+//   await prisma.tasting.deleteMany({});
+//   console.log(`Degustações antigas foram removidas.`);
 
-  // 2. Ler o arquivo Excel
-  const filePath = path.join(process.cwd(), 'cervejas.xlsx');
+//   // 2. Ler o arquivo Excel
+//   const filePath = path.join(process.cwd(), 'cervejas.xlsx');
+//   const workbook = xlsx.readFile(filePath);
   const workbook = xlsx.readFile(filePath);
   
   const descriptionsSheet = workbook.Sheets['Ficha de degustação'];
